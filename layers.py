@@ -14,40 +14,47 @@ class Layer:
         return np.array(list(output))
 
     def process(self, other):
+        logging.debug('Input  : {0}'.format(other))
         output = np.array([other]).dot(self.weights)[0]
         output = np.add(output, self.bias)
         output = map(self.activation[0], output)
-        return np.array(list(output))
+        output = np.array(list(output))
+        logging.debug('Output : {0}'.format(output.tolist()))
+        return output
 
     def learn(self, target):
         logging.debug('Output : {0}'.format(self.last_outputs))
         logging.debug('Target : {0}'.format(target.tolist()))
         logging.debug('Input  : {0}'.format(self.last_inputs))
         logging.debug('Weights: {0}'.format(self.weights.tolist()))
-
-        eb, ew = 0, np.zeros((self.inputs, self.outputs))
-        et = np.zeros((self.inputs, self.outputs))
+        eb, errors = 0, np.zeros((self.inputs, self.outputs))
         for y, line in enumerate(self.weights):
             for x in range(len(line)):
-                input = self.last_inputs[y]
                 output = self.last_outputs[x]
-                t = sum(target[x])
-                logging.debug('({0})({1})({2})'.format(t, output * (1 - output), input))    #last:   error = (expected - output) * transfer_derivative(output)
-                ew[y, x] = t * output * (1 - output) * input								#hidden: error = (weight_k * error_j) * transfer_derivative(output)
-                et[y, x] += t * output * (1 - output) * self.weights[y, x]
-                if x == y:
-                    logging.debug('{0}: ({1})({2})'.format(y, target[y][y], output * (1 - output)))
-                    eb += target[y][y] * output * (1 - output)
+                input = self.last_inputs[y]
+                t = sum(target[x, :])
 
-        logging.debug('Eb: {0}'.format(eb))
-        logging.debug('Ew: {0}'.format(ew.tolist()))
-        logging.debug('Et: {0}'.format(et.tolist()))
-        self._adjust_weights(ew, eb)
-        return et
+                derivative = self.activation[1](output)
+                logging.debug('derivative: {}'.format(derivative))
+                logging.debug('target_x: {}'.format(t))
+                logging.debug('weight: {}'.format(self.weights[y, x]))
+                errors[y, x] += t * derivative * input
+                eb += t * derivative
+                logging.debug('errors: {}'.format(errors.tolist()))
+        self._adjust_weights(errors, eb)
+        return errors
 
-    def _adjust_weights(self, ew, eb):
-        self.weights = np.subtract(self.weights, np.multiply(self.learning_rate, ew))  # learning rate * error * input
-        self.bias = self.bias - self.learning_rate * eb	# ok
+    def _adjust_weights(self, errors, eb):
+        # print('er: ', errors)
+        adjustment = np.multiply(self.learning_rate, errors)
+        # adjustment = np.multiply(adjustment, np.array([self.last_inputs]).T)
+        # print(self.weights)
+        # print('ad: ', np.array([adjustment]).T)
+        logging.debug('Weights: {0}'.format(self.weights.tolist()))
+        logging.debug('Adjusts: {0}'.format(adjustment.tolist()))
+        self.weights = np.subtract(self.weights, np.array(adjustment))
+        logging.debug('Weights: {0}'.format(self.weights.tolist()))
+        self.bias -= self.learning_rate * eb
 
 
 class Dense(Layer):
