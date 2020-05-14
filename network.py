@@ -3,23 +3,18 @@ import logging
 import numpy as np
 
 import layers as lr
-
-'''
-logging.basicConfig(level=logging.DEBUG, filename='files/network.log', filemode='w',
-                    format='%(levelname)-8s %(funcName)-20s %(message)s')
-'''
+import visualisation as vis
 
 
 def normalise(vector):
-    print(vector)
     return [(v - min(vector)) / (max(vector) - min(vector)) for v in vector]
 
 
 class Network:
-    def __init__(self, layers, use_normalise=True):
+    def __init__(self, layers, use_normalise=False):
         assert isinstance(layers, list)
-        float_formatter = "{:.4f}".format
-        np.set_printoptions(formatter={'float_kind': float_formatter})
+        # float_formatter = "{:.4f}".format
+        # np.set_printoptions(formatter={'float_kind': float_formatter})
         self.layers = layers
         self.error = 0
         self.use_normalise = use_normalise
@@ -34,10 +29,7 @@ class Network:
             output = np.array(test_vector.copy())
         for layer in self.layers:
             layer.last_inputs = np.array(output.copy())
-            if self.use_normalise:
-                output = np.array(normalise(layer.process(output)))
-            else:
-                output = layer.process(output)
+            output = layer.call(output)
             layer.last_outputs = output
         self.error = 0.5 * sum([(o - t) * (o - t) for o, t in zip(output, test_expected)])
         return output
@@ -56,23 +48,32 @@ class Network:
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG, filename='logs/network.log', filemode='w',
+                        format='%(levelname)-8s %(funcName)-20s %(message)s')
+
     x = [1, 4, 5]
-    first = lr.Dense(3, 2, activation='relu', learning_rate=.005)
-    second = lr.Dense(2, 2, activation='relu', learning_rate=.005)
+    first = lr.Dense(3, 2, activation='none', learning_rate=.1)
+    second = lr.Dense(2, 2, activation='log', learning_rate=.2)
     net = Network([
         first,
         second
     ])
 
+    '''
     first.weights = np.array([[0.1, 0.2],
                               [0.3, 0.4],
                               [0.5, 0.6]])
     second.weights = np.array([[0.7, 0.8],
                                [0.9, 0.1]])
+    '''
 
     print('Input:  ', x)
     print('Weights:\n', net)
-    for i in range(1500):
+    err = []
+    for i in range(200):
         print('Output: ', net.learn(x, [1, 0]))
         print('Error:  ', net.error)
+        err.append(net.error)
     print('Weights:\n', net)
+    vis.show(err)
+

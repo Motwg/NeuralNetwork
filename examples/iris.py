@@ -1,5 +1,3 @@
-from random import choices
-
 import visualisation as vis
 from layers import Dense
 from network import Network
@@ -29,21 +27,22 @@ print(test_labels[0])
 import pandas as pd
 from sklearn.datasets import load_iris
 
+'''
+logging.basicConfig(level=logging.DEBUG, filename='../logs/iris.log', filemode='w',
+                    format='%(levelname)-8s %(funcName)-20s %(message)s')
+'''
+
+
 iris = load_iris()
 labels = iris.target
 df = pd.DataFrame(iris.data, columns=['sl', 'sw', 'pl', 'pw'])
-print(df.head())
-print(labels)
 
 net = Network([
-    # Dense(4, 8, activation='relu', learning_rate=0.02),
-   #Dense(4, 5, activation='none', learning_rate=0.01),
-    # Dense(8, 8, activation='none', learning_rate=0.01),
-    Dense(4, 4, activation='relu', learning_rate=0.003),
-    Dense(4, 3, activation='log', learning_rate=0.01)
-])
+    Dense(4, 4, activation='none', learning_rate=0.2),
+    Dense(4, 3, activation='log', learning_rate=0.2)
+], use_normalise=False)
 
-train, tr_labs, err, acc = [], [], [], []
+train, tr_labs, errors, acc = [], [], [], []
 for row, label in zip(df.iterrows(), labels):
     new_list = [row[1][i] for i in range(4)]
     new_label = [0] * 3
@@ -52,13 +51,16 @@ for row, label in zip(df.iterrows(), labels):
     tr_labs.append(new_label)
 
 packet = list(map(list, zip(train, tr_labs)))
-print(packet[0])
 
-for _ in range(65):
+for _ in range(5):
     print(_)
-    for row, label in choices(packet, k=150):
+    # choices(packet, k=150)
+    err = []
+    for row, label in packet:
         net.learn(row, label)
         err.append(net.error)
+    errors.append(sum(err) / len(err))
+    print(errors[-1])
 
 for row, label in zip(train, tr_labs):
     output = net.run_once(row, label)
@@ -69,7 +71,7 @@ for row, label in zip(train, tr_labs):
         acc.append(0)
         print(label, ': ', output, '  WRONG')
 
-print(acc.count(1) / len(acc))
-print(err)
-vis.show(err)
+print('{} % Correct!'.format(acc.count(1) / len(acc) * 100))
+print(errors)
+vis.show(errors)
 
