@@ -16,8 +16,9 @@ for index, row in df.iterrows():
     new_list_dif = [row['difx'], row['dify']]
     train_xy.append(new_list_meas)
     correct_xy.append(new_list_ref)
-train_xy = reduce(normalise(train_xy))
-correct_xy = normalise(correct_xy)
+train_xy, _, _ = normalise(train_xy)
+train_xy = reduce(train_xy)
+correct_xy, x_range, y_range = normalise(correct_xy)
 train_xy = [xy for xy in get_previous(train_xy, previous_samples * 2)]
 print(train_xy[:3])
 print(correct_xy[:3])
@@ -33,7 +34,7 @@ model = keras.Sequential([
     keras.layers.Dense(25, activation='relu'),
     keras.layers.Dense(2, activation='relu')
 ])
-model.compile(optimizer=keras.optimizers.SGD(learning_rate=0.001, nesterov=True),
+model.compile(optimizer=keras.optimizers.SGD(learning_rate=0.001, nesterov=False),
               loss=keras.losses.MSE,
               metrics=['accuracy'])
 
@@ -46,8 +47,11 @@ predictions = model.predict(train_xy)
 for i in range(5):
     print('Prediction: ', predictions[i], '  Correct: ', correct_xy[i])
 
-plt.plot(*split(correct_xy), linestyle='-', color='red')
-plt.plot(*split(predictions), linestyle=' ', color='blue', marker='o', markersize=1.2)
+predictions = normalise_from_to(predictions, (0, 1), (0, 1), x_range, y_range)
+plt.plot(*split(normalise_from_to(correct_xy, (0, 1), (0, 1), x_range, y_range)),
+         linestyle='-', color='red')
+plt.plot(*split(predictions),
+         linestyle=' ', color='blue', marker='o', markersize=1.2)
 plt.show()
 
 
