@@ -1,6 +1,6 @@
-import visualisation as vis
-from layers import Dense
-from network import Network
+from core import visualisation as vis
+from core.layers import Dense
+from core.network import Network
 
 float_formatter = "{:.4f}".format
 

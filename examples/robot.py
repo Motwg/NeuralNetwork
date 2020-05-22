@@ -1,10 +1,10 @@
 import pandas as pd
 
-import visualisation as vis
-from layers import Dense
-from network import Network
+from core import visualisation as vis
+from core.layers import Dense
+from core.network import Network
 
-df = pd.read_excel('pozyx/pozyxAPI_only_localization_measurement1.xlsx', sheet_name='measurement')
+df = pd.read_excel('../pozyx/pozyxAPI_only_localization_measurement1.xlsx', sheet_name='measurement')
 
 train_xy, correct_xy, err, acc = [], [], [], []
 for index, row in df.iterrows():

@@ -8,7 +8,8 @@ def function_switcher(function_code):
         'log': (logistic, logistic_derivative),
         'sig': (logistic, logistic_derivative),
         'none': (none, none_derivative),
-        'tanh': (tanh, tanh_derivative)
+        'tanh': (tanh, tanh_derivative),
+        'lrelu': (lrelu, lrelu_derivative)
     }
     return switcher.get(function_code.lower(), 'log')
 
@@ -47,3 +48,17 @@ def none_derivative(x):
 def tanh_derivative(x):
     f = tanh(x)
     return 1 - f * f
+
+
+def lrelu(x):
+    if x <= 0:
+        return 0.01 * x
+    else:
+        return x
+
+
+def lrelu_derivative(x):
+    if x <= 0:
+        return 0.01
+    else:
+        return 1

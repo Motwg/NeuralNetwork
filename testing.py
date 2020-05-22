@@ -1,7 +1,7 @@
 import numpy as np
 
-from layers import Dense as MyDense
-from network import Network as MyNetwork
+from core.layers import Dense as MyDense
+from core.network import Network as MyNetwork
 
 float_formatter = "{:.4f}".format
 

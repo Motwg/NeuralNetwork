@@ -1,6 +1,6 @@
-import visualisation as vis
-from layers import Dense
-from network import Network
+from core import visualisation as vis
+from core.layers import Dense
+from core.network import Network
 
 '''
 from tensorflow import keras
@@ -38,8 +38,8 @@ labels = iris.target
 df = pd.DataFrame(iris.data, columns=['sl', 'sw', 'pl', 'pw'])
 
 net = Network([
-    Dense(4, 4, activation='none', learning_rate=0.2),
-    Dense(4, 3, activation='log', learning_rate=0.2)
+    Dense(4, 4, activation='log', learning_rate=0.4),
+    Dense(4, 3, activation='log', learning_rate=0.4)
 ], use_normalise=False)
 
 train, tr_labs, errors, acc = [], [], [], []
@@ -52,15 +52,14 @@ for row, label in zip(df.iterrows(), labels):
 
 packet = list(map(list, zip(train, tr_labs)))
 
-for _ in range(5):
-    print(_)
+for _ in range(1000):
     # choices(packet, k=150)
     err = []
     for row, label in packet:
         net.learn(row, label)
         err.append(net.error)
     errors.append(sum(err) / len(err))
-    print(errors[-1])
+    print("Epoch: %d  MSE: %f" % (_, errors[-1]))
 
 for row, label in zip(train, tr_labs):
     output = net.run_once(row, label)
